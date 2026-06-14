@@ -5,10 +5,18 @@ export default async function handler(req, res) {
     req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
   try {
-    const geo = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`);
-    const { countryCode } = await geo.json();
-    if (countryCode) {
-      await kv.hincrby("flags", countryCode, 1);
+    // Check if this IP was already counted in the last 24 hours
+    const alreadyCounted = await kv.get(`ip:${ip}`);
+
+    if (!alreadyCounted) {
+      const geo = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`);
+      const { countryCode } = await geo.json();
+
+      if (countryCode) {
+        await kv.hincrby("flags", countryCode, 1);
+        // Store IP for 24 hours (86400 seconds)
+        await kv.set(`ip:${ip}`, "1", { ex: 86400 });
+      }
     }
   } catch (e) {}
 
