@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       if (countryCode) {
         await kv.hincrby("flags", countryCode, 1);
         // Store IP for 24 hours (86400 seconds)
-        await kv.set(`ip:${ip}`, "1", { ex: 86400 });
+        await kv.set(`ip:${ip}`, "1", { ex: 15552000 });
       }
     }
   } catch (e) {}
