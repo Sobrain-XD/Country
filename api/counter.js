@@ -26,8 +26,8 @@ export default async function handler(req, res) {
   const colCount = 4;
   const cellW = Math.floor((cardW - paddingX * 2) / colCount);
   const restRows = rest.length > 0 ? Math.ceil(rest.length / colCount) : 0;
-  const restHeaderH = rest.length > 0 ? 28 : 0;
-  const restRowH = 20;
+  const restHeaderH = rest.length > 0 ? 36 : 0;
+  const restRowH = 22;
   const restH = rest.length > 0 ? restHeaderH + restRows * restRowH : 0;
   const footerH = 10;
   const cardH = headerH + top5.length * rowH + restH + footerH;
@@ -48,16 +48,6 @@ export default async function handler(req, res) {
       ? `→ ${maxCount} visit${maxCount !== 1 ? "s" : ""} · ${pctOfTotal}%`
       : `#${i + 1} · ${pctOfTotal}%`;
 
-    const countLabel = barW > 60
-      ? `<text x="${paddingX + barW / 2}" y="${y + 33}" text-anchor="middle"
-          font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">
-          ${countNum} visit${countNum !== 1 ? "s" : ""}
-        </text>`
-      : `<text x="${cardW - paddingX}" y="${y + 33}" text-anchor="end"
-          font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#c4b5fd">
-          ${countNum} visit${countNum !== 1 ? "s" : ""}
-        </text>`;
-
     return `
       <text x="${paddingX}" y="${y + 16}"
         font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="600" fill="${labelColor}">
@@ -72,7 +62,11 @@ export default async function handler(req, res) {
         fill="${barGradient}" filter="${isTop ? "url(#goldGlow)" : "url(#purpleGlow)"}"/>
       ${isTop ? `<rect x="${paddingX}" y="${y + 22}" width="${barW}" height="16" rx="8"
         fill="none" stroke="#ffd700" stroke-width="2"/>` : ""}
-      ${countLabel}
+      <text x="${paddingX + barTrackW / 2}" y="${y + 34}" text-anchor="middle"
+        font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700"
+        fill="${barW > barTrackW / 2 ? "#ffffff" : "#8878c0"}">
+        ${countNum} visit${countNum !== 1 ? "s" : ""}
+      </text>
     `;
   });
 
@@ -99,14 +93,14 @@ export default async function handler(req, res) {
   });
 
   const restSection = rest.length > 0 ? `
-    <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}"
-      x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}"
+    <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 8}"
+      x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 8}"
       stroke="#2a2250" stroke-width="1"/>
-    <text x="${paddingX}" y="${headerH + top5.length * rowH + 22}"
+    <text x="${paddingX}" y="${headerH + top5.length * rowH + 24}"
       font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
       Others
     </text>
-    <text x="${cardW - paddingX}" y="${headerH + top5.length * rowH + 22}" text-anchor="end"
+    <text x="${cardW - paddingX}" y="${headerH + top5.length * rowH + 24}" text-anchor="end"
       font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
       → ${othersPct}%
     </text>
