@@ -12,21 +12,24 @@ export default async function handler(req, res) {
   const flags = await kv.hgetall("flags") || {};
 
   const sorted = Object.entries(flags)
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
-    .slice(0, 8);
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  const top5 = sorted.slice(0, 5);
+  const rest = sorted.slice(5);
 
   const totalVisits = sorted.reduce((sum, [, v]) => sum + Number(v), 0);
-  const maxCount = sorted.length > 0 ? Number(sorted[0][1]) : 1;
+  const maxCount = top5.length > 0 ? Number(top5[0][1]) : 1;
 
   const cardW = 340;
   const rowH = 52;
   const paddingX = 16;
   const headerH = 44;
+  const restH = rest.length > 0 ? 36 : 0;
   const footerH = 10;
-  const cardH = headerH + sorted.length * rowH + footerH;
+  const cardH = headerH + top5.length * rowH + restH + footerH;
   const barTrackW = cardW - paddingX * 2;
 
-  const rows = sorted.map(([code, count], i) => {
+  const rows = top5.map(([code, count], i) => {
     const y = headerH + i * rowH;
     const flag = getFlagEmoji(code);
     const pct = Math.max(0.04, Number(count) / maxCount);
@@ -42,13 +45,13 @@ export default async function handler(req, res) {
         font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="600" fill="${labelColor}">
         ${crown}${flag} ${code}
       </text>
-      <text x="${cardW - paddingX}" y="${y + 16}" text-anchor="end"
-        font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#6d5fa0">
-        → ${maxCount} visit${maxCount !== 1 ? "s" : ""}
-      </text>
+
       <rect x="${paddingX}" y="${y + 22}" width="${barTrackW}" height="16" rx="8" fill="#1a1640"/>
       <rect x="${paddingX}" y="${y + 22}" width="${barW}" height="16" rx="8"
         fill="${barGradient}" filter="${isTop ? "url(#goldGlow)" : "url(#purpleGlow)"}"/>
+      ${isTop ? `<rect x="${paddingX}" y="${y + 22}" width="${barW}" height="16" rx="8"
+        fill="none" stroke="#ffd700" stroke-width="2"/>` : ""}
+
       <text x="${paddingX + Math.min(barW, barTrackW) / 2}" y="${y + 34}" text-anchor="middle"
         font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">
         ${countNum} visit${countNum !== 1 ? "s" : ""}
@@ -56,8 +59,15 @@ export default async function handler(req, res) {
     `;
   });
 
+  const restRow = rest.length > 0 ? `
+    <text x="${paddingX}" y="${headerH + top5.length * rowH + 22}"
+      font-family="'Segoe UI Emoji', Apple Color Emoji, sans-serif" font-size="13" fill="#a0a0c0">
+      ${rest.map(([code, count]) => `${getFlagEmoji(code)} ${count}`).join("  ")}
+    </text>
+  ` : "";
+
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${cardW}" height="${Math.max(cardH, 80)}">
+<svg xmlns="http://www.w3.org/2000/svg" width="${cardW}" height="${cardH}">
   <defs>
     <linearGradient id="purpleBar" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#7e56d9"/>
@@ -80,8 +90,10 @@ export default async function handler(req, res) {
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <rect width="${cardW}" height="${Math.max(cardH, 80)}" rx="10" fill="url(#cardBg)"/>
+
+  <rect width="${cardW}" height="${cardH}" rx="10" fill="url(#cardBg)"/>
   <rect x="0" y="0" width="${cardW}" height="3" rx="2" fill="url(#purpleBar)"/>
+
   <text x="${paddingX}" y="28"
     font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff">
     🌍 Visitor Countries
@@ -90,8 +102,18 @@ export default async function handler(req, res) {
     font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#6d5fa0">
     ${totalVisits} total visits
   </text>
+
   <line x1="${paddingX}" y1="36" x2="${cardW - paddingX}" y2="36" stroke="#2a2250" stroke-width="1"/>
+
   ${rows.join("")}
+
+  ${rest.length > 0 ? `
+  <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}" 
+    x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}" 
+    stroke="#2a2250" stroke-width="1"/>
+  ` : ""}
+
+  ${restRow}
 </svg>`.trim();
 
   res.setHeader("Content-Type", "image/svg+xml");
