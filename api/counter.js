@@ -65,12 +65,16 @@ export default async function handler(req, res) {
       ${isTop ? `<rect x="${paddingX}" y="${y + 22}" width="${barW}" height="16" rx="8"
         fill="none" stroke="#ffd700" stroke-width="2"/>` : ""}
 
-      <text x="${paddingX + Math.min(barW, barTrackW) / 2}" y="${y + 34}" text-anchor="middle"
-        font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">
-        ${countNum} visit${countNum !== 1 ? "s" : ""}
-      </text>
-    `;
-  });
+      ${barW > 60
+  ? `<text x="${paddingX + barW / 2}" y="${y + 34}" text-anchor="middle"
+      font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">
+      ${countNum} visit${countNum !== 1 ? "s" : ""}
+    </text>`
+  : `<text x="${paddingX + barW + 5}" y="${y + 34}" text-anchor="start"
+      font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#c4b5fd">
+      ${countNum} visit${countNum !== 1 ? "s" : ""}
+    </text>`
+      });
 
   const othersTotal = rest.reduce((sum, [, v]) => sum + Number(v), 0);
   const othersPct = totalVisits > 0 ? Math.round((othersTotal / totalVisits) * 100) : 0;
