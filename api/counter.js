@@ -24,7 +24,12 @@ export default async function handler(req, res) {
   const rowH = 52;
   const paddingX = 16;
   const headerH = 44;
-  const restH = rest.length > 0 ? 36 : 0;
+  const colCount = 4;
+  const cellW = Math.floor((cardW - paddingX * 2) / colCount);
+  const restRows = rest.length > 0 ? Math.ceil(rest.length / colCount) : 0;
+  const restHeaderH = rest.length > 0 ? 28 : 0;
+  const restRowH = 20;
+  const restH = rest.length > 0 ? restHeaderH + restRows * restRowH : 0;
   const footerH = 10;
   const cardH = headerH + top5.length * rowH + restH + footerH;
   const barTrackW = cardW - paddingX * 2;
@@ -39,10 +44,10 @@ export default async function handler(req, res) {
     const barGradient = isTop ? "url(#goldBar)" : "url(#purpleBar)";
     const labelColor = isTop ? "#ffd700" : "#c4b5fd";
     const crown = isTop ? "👑 " : "";
-    const pctOfTop = Math.round((countNum / maxCount) * 100);
+    const pctOfTotal = Math.round((countNum / totalVisits) * 100);
     const rightLabel = isTop
-      ? `→ ${maxCount} visit${maxCount !== 1 ? "s" : ""}`
-      : `#${i + 1} · ${pctOfTop}%`;
+      ? `→ ${maxCount} visit${maxCount !== 1 ? "s" : ""} · ${pctOfTotal}%`
+      : `#${i + 1} · ${pctOfTotal}%`;
 
     return `
       <text x="${paddingX}" y="${y + 16}"
@@ -67,11 +72,41 @@ export default async function handler(req, res) {
     `;
   });
 
-  const restRow = rest.length > 0 ? `
+  const othersTotal = rest.reduce((sum, [, v]) => sum + Number(v), 0);
+  const othersPct = totalVisits > 0 ? Math.round((othersTotal / totalVisits) * 100) : 0;
+
+  const restCells = rest.map(([code, count], i) => {
+    const col = i % colCount;
+    const row = Math.floor(i / colCount);
+    const x = paddingX + col * cellW;
+    const y = headerH + top5.length * rowH + restHeaderH + row * restRowH;
+    const flag = getFlagEmoji(code);
+    const num = i + 6;
+    const isLast = col === colCount - 1 || i === rest.length - 1;
+
+    return `
+      <text x="${x}" y="${y}"
+        font-family="'Segoe UI Emoji', Apple Color Emoji, sans-serif" font-size="10" fill="#a0a0c0">
+        ${num}.${flag}${count}
+      </text>
+      ${!isLast ? `<line x1="${x + cellW - 2}" y1="${y - 12}" x2="${x + cellW - 2}" y2="${y + 2}"
+        stroke="#3a3260" stroke-width="1"/>` : ""}
+    `;
+  });
+
+  const restSection = rest.length > 0 ? `
+    <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}"
+      x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}"
+      stroke="#2a2250" stroke-width="1"/>
     <text x="${paddingX}" y="${headerH + top5.length * rowH + 22}"
-      font-family="'Segoe UI Emoji', Apple Color Emoji, sans-serif" font-size="13" fill="#a0a0c0">
-      ${rest.map(([code, count]) => `${getFlagEmoji(code)} ${count}`).join("  ")}
+      font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
+      Others
     </text>
+    <text x="${cardW - paddingX}" y="${headerH + top5.length * rowH + 22}" text-anchor="end"
+      font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
+      → ${othersPct}%
+    </text>
+    ${restCells.join("")}
   ` : "";
 
   const svg = `
@@ -115,13 +150,7 @@ export default async function handler(req, res) {
 
   ${rows.join("")}
 
-  ${rest.length > 0 ? `
-  <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}"
-    x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}"
-    stroke="#2a2250" stroke-width="1"/>
-  ` : ""}
-
-  ${restRow}
+  ${restSection}
 </svg>`.trim();
 
   res.setHeader("Content-Type", "image/svg+xml");
