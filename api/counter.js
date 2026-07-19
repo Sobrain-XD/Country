@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const maxCount = top5.length > 0 ? Number(top5[0][1]) : 1;
 
   const cardW = 340;
-  const rowH = 52;
+  const rowH = 48;
   const paddingX = 16;
   const headerH = 44;
   const colCount = 4;
@@ -49,11 +49,11 @@ export default async function handler(req, res) {
       : `#${i + 1} · ${pctOfTotal}%`;
 
     const countLabel = barW > 60
-      ? `<text x="${paddingX + barW / 2}" y="${y + 34}" text-anchor="middle"
+      ? `<text x="${paddingX + barW / 2}" y="${y + 33}" text-anchor="middle"
           font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">
           ${countNum} visit${countNum !== 1 ? "s" : ""}
         </text>`
-      : `<text x="${paddingX + barW + 5}" y="${y + 34}" text-anchor="start"
+      : `<text x="${cardW - paddingX}" y="${y + 33}" text-anchor="end"
           font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#c4b5fd">
           ${countNum} visit${countNum !== 1 ? "s" : ""}
         </text>`;
