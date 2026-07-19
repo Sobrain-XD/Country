@@ -10,7 +10,6 @@ function getFlagEmoji(code) {
 
 export default async function handler(req, res) {
   const flags = await kv.hgetall("flags") || {};
-
   const sorted = Object.entries(flags)
     .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]));
 
@@ -74,7 +73,7 @@ export default async function handler(req, res) {
       font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#c4b5fd">
       ${countNum} visit${countNum !== 1 ? "s" : ""}
     </text>`
-      });
+      }
 
   const othersTotal = rest.reduce((sum, [, v]) => sum + Number(v), 0);
   const othersPct = totalVisits > 0 ? Math.round((othersTotal / totalVisits) * 100) : 0;
