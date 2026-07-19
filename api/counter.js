@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const flags = await kv.hgetall("flags") || {};
 
   const sorted = Object.entries(flags)
-    .sort((a, b) => Number(b[1]) - Number(a[1]));
+    .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]));
 
   const top5 = sorted.slice(0, 5);
   const rest = sorted.slice(5);
@@ -39,11 +39,19 @@ export default async function handler(req, res) {
     const barGradient = isTop ? "url(#goldBar)" : "url(#purpleBar)";
     const labelColor = isTop ? "#ffd700" : "#c4b5fd";
     const crown = isTop ? "👑 " : "";
+    const pctOfTop = Math.round((countNum / maxCount) * 100);
+    const rightLabel = isTop
+      ? `→ ${maxCount} visit${maxCount !== 1 ? "s" : ""}`
+      : `#${i + 1} · ${pctOfTop}%`;
 
     return `
       <text x="${paddingX}" y="${y + 16}"
         font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="600" fill="${labelColor}">
         ${crown}${flag} ${code}
+      </text>
+      <text x="${cardW - paddingX}" y="${y + 16}" text-anchor="end"
+        font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="${isTop ? "#ffd700" : "#6d5fa0"}">
+        ${rightLabel}
       </text>
 
       <rect x="${paddingX}" y="${y + 22}" width="${barTrackW}" height="16" rx="8" fill="#1a1640"/>
@@ -108,8 +116,8 @@ export default async function handler(req, res) {
   ${rows.join("")}
 
   ${rest.length > 0 ? `
-  <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}" 
-    x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}" 
+  <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 6}"
+    x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 6}"
     stroke="#2a2250" stroke-width="1"/>
   ` : ""}
 
