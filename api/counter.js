@@ -26,10 +26,10 @@ export default async function handler(req, res) {
   const colCount = 4;
   const cellW = Math.floor((cardW - paddingX * 2) / colCount);
   const restRows = rest.length > 0 ? Math.ceil(rest.length / colCount) : 0;
-  const restHeaderH = rest.length > 0 ? 36 : 0;
-  const restRowH = 22;
+  const restHeaderH = rest.length > 0 ? 60 : 0;
+  const restRowH = 24;
   const restH = rest.length > 0 ? restHeaderH + restRows * restRowH : 0;
-  const footerH = 10;
+  const footerH = 16;
   const cardH = headerH + top5.length * rowH + restH + footerH;
   const barTrackW = cardW - paddingX * 2;
 
@@ -87,20 +87,20 @@ export default async function handler(req, res) {
         font-family="'Segoe UI Emoji', Apple Color Emoji, sans-serif" font-size="10" fill="#a0a0c0">
         ${num}.${flag}${count}
       </text>
-      ${!isLast ? `<line x1="${x + cellW - 2}" y1="${y - 12}" x2="${x + cellW - 2}" y2="${y + 2}"
+      ${!isLast ? `<line x1="${x + cellW - 2}" y1="${y - 14}" x2="${x + cellW - 2}" y2="${y + 4}"
         stroke="#3a3260" stroke-width="1"/>` : ""}
     `;
   });
 
   const restSection = rest.length > 0 ? `
-    <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 8}"
-      x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 8}"
+    <line x1="${paddingX}" y1="${headerH + top5.length * rowH + 16}"
+      x2="${cardW - paddingX}" y2="${headerH + top5.length * rowH + 16}"
       stroke="#2a2250" stroke-width="1"/>
-    <text x="${paddingX}" y="${headerH + top5.length * rowH + 24}"
+    <text x="${paddingX}" y="${headerH + top5.length * rowH + 38}"
       font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
       Others
     </text>
-    <text x="${cardW - paddingX}" y="${headerH + top5.length * rowH + 24}" text-anchor="end"
+    <text x="${cardW - paddingX}" y="${headerH + top5.length * rowH + 38}" text-anchor="end"
       font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#6d5fa0">
       → ${othersPct}%
     </text>
